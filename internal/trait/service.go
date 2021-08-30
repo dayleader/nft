@@ -28,7 +28,7 @@ func NewBasicTraitService(
 }
 
 func (s *service) Import(root string) (int, error) {
-	priority := 1
+	priority := 0
 	err := filepath.Walk(root, func(path string, info os.FileInfo, errr error) error {
 		if info.IsDir() {
 			return nil
@@ -37,11 +37,8 @@ func (s *service) Import(root string) (int, error) {
 			return fmt.Errorf("Bad file extension: %s", filepath.Ext(info.Name()))
 		}
 		splited := strings.Split(path, "/")
-		groupName := splited[1]
-		traitName := info.Name()
-
-		fmt.Println(groupName)
-		fmt.Println(traitName)
+		groupName := splited[1][3:]
+		traitName := info.Name()[:len(info.Name())-4]
 
 		// Create group if not exist.
 		foundGroup, _ := s.groupRepository.GetByName(groupName)
@@ -50,6 +47,9 @@ func (s *service) Import(root string) (int, error) {
 				Name:     groupName,
 				Priotiry: priority,
 			})
+			priority++
+
+			fmt.Printf("%s - %d\n", groupName, priority)
 			if err != nil {
 				return err
 			}

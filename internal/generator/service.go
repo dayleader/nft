@@ -9,6 +9,7 @@ import (
 	"nft/internal/domain"
 	"os"
 	"sort"
+	"sync"
 )
 
 type service struct {
@@ -34,40 +35,62 @@ func (s *service) GenerateImages() error {
 	if !(s.params.Number > 0) {
 		return fmt.Errorf("specify at least one element to generate")
 	}
+	var (
+		wg       sync.WaitGroup
+		poolSize = 20
+		channel  = make(chan int, poolSize)
+	)
+	for i := 0; i < poolSize; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _ = range channel {
+				err := s.generateImageInternal()
+				if err != nil {
+					panic(err)
+				}
+			}
+		}()
+	}
 	for i := 0; i < s.params.Number; i++ {
-		img, traits, err := s.generateInternal()
-		if err != nil {
-			return err
-		}
-		key := ""
-		for _, flat := range traits {
-			key = key + " " + fmt.Sprintf("%s-%s", flat.TraitType, flat.Value)
-		}
-		key2 := hash(key)
-		// Create image file.
-		imgFile, err := os.Create(fmt.Sprintf("%s/%d.png", s.params.OutputDirectory, key2))
-		if err != nil {
-			return err
-		}
-		defer imgFile.Close()
-		_, err = imgFile.Write(img)
-		if err != nil {
-			return err
-		}
-		// Create traits file.
-		traitsFile, err := os.Create(fmt.Sprintf("%s/%d.json", s.params.OutputDirectory, key2))
-		if err != nil {
-			return err
-		}
-		defer traitsFile.Close()
-		traitsBytes, err := json.Marshal(traits)
-		if err != nil {
-			return err
-		}
-		_, err = traitsFile.Write(traitsBytes)
-		if err != nil {
-			return err
-		}
+		channel <- i
+	}
+	return nil
+}
+
+func (s *service) generateImageInternal() error {
+	img, traits, err := s.generateInternal()
+	if err != nil {
+		return err
+	}
+	key := ""
+	for _, flat := range traits {
+		key = key + " " + fmt.Sprintf("%s-%s", flat.TraitType, flat.Value)
+	}
+	key2 := hash(key)
+	// Create image file.
+	imgFile, err := os.Create(fmt.Sprintf("%s/%d.png", s.params.OutputDirectory, key2))
+	if err != nil {
+		return err
+	}
+	defer imgFile.Close()
+	_, err = imgFile.Write(img)
+	if err != nil {
+		return err
+	}
+	// Create traits file.
+	traitsFile, err := os.Create(fmt.Sprintf("%s/%d.json", s.params.OutputDirectory, key2))
+	if err != nil {
+		return err
+	}
+	defer traitsFile.Close()
+	traitsBytes, err := json.Marshal(traits)
+	if err != nil {
+		return err
+	}
+	_, err = traitsFile.Write(traitsBytes)
+	if err != nil {
+		return err
 	}
 	return nil
 }

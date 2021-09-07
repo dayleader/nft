@@ -6,6 +6,7 @@ import (
 	"nft/internal/combiner"
 	"nft/internal/domain"
 	"nft/internal/generator"
+	"nft/internal/helpers"
 	"nft/internal/inmemory"
 	"nft/internal/trait"
 	"os"
@@ -20,6 +21,7 @@ func main() {
 	flag.StringVar(&appContext.GeneratorParams.OutputDirectory, "generated-image-output", "output-dir", "generated image output directory")
 	flag.IntVar(&appContext.GeneratorParams.Number, "generated-image-number", 100, "generated image number")
 	generate := flag.Bool("generate", false, "Generate images")
+	printInfo := flag.Bool("info", false, "Print info")
 
 	flag.CommandLine.SetOutput(os.Stdout)
 	flag.Parse()
@@ -44,5 +46,8 @@ func main() {
 			panic(err)
 		}
 		return
+	}
+	if *printInfo {
+		helpers.PrintStatistic(appContext.GeneratorParams.OutputDirectory)
 	}
 }

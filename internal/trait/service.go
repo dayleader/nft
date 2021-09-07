@@ -201,7 +201,7 @@ func checkProbabilityVector(vector []float32) error {
 	for _, p := range vector {
 		sum += p
 	}
-	if sum != controllSum {
+	if !(sum >= controllSum-0.1 || sum >= controllSum+0.1) {
 		return fmt.Errorf("Expected probability vector controll sum %v but got %v", controllSum, sum)
 	}
 	return nil

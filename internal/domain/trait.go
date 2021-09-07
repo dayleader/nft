@@ -7,14 +7,24 @@ import (
 	"strings"
 )
 
+const (
+	RarenessKindCommon = RarenessKind(0)
+	RarenessKindSilver = RarenessKind(1)
+	RarenessKindGold   = RarenessKind(2)
+)
+
 // TraitID - trait id.
 type TraitID string
 
+// Rareness - rareness.
+type RarenessKind int
+
 // TraitWrite struct.
 type TraitWrite struct {
-	Name  string     `json:"name"`
-	Group *GroupRead `json:"group"`
-	Image []byte     `json:"image"`
+	Name         string       `json:"name"`
+	Group        *GroupRead   `json:"group"`
+	Image        []byte       `json:"image"`
+	RarenessKind RarenessKind `json:"rareness"`
 }
 
 // TraitRead struct.

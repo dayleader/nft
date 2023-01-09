@@ -1,3 +1,6 @@
+## DEPRECATED
+Please use https://github.com/golang-enthusiast/candy-machine/tree/main
+
 ## About 
 This repository provides various utilities to help you build your NFT collection:
 - Generate images from source layers / Merge layers in the specified order
